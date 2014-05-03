@@ -7,9 +7,10 @@
 (*Elementary definitions*)
 
 $X=X;
-SqrtPolyPart[d_]:=Normal[Series[Sqrt[d],{$X,\[Infinity],0}]]
+SqrtPolyPart[d_]:=SqrtPolyPart[d]=Normal[Series[Sqrt[d],{$X,\[Infinity],0}]]
 SquareQ[d_]:=SameQ[d-SqrtPolyPart[d]^2,0]
 ConstantQ[xpr_]:=SameQ[0,Exponent[xpr,$X]]
+SquareRemainder[d_]:=SquareRemainder[d]=Simplify[d-SqrtPolyPart[d]^2]
 
 (* ::Subsection:: *)
 (*Representation of continued fraction*)
@@ -34,17 +35,20 @@ CQNormalise[CQ[n_,d_,t_,s_]]:=Module[{a,r,g},
 (* ::Text:: *)
 (*The next step is being able to compute the partial quotient from the complete quotient.*)
 
-CQPartialQuotient[CQ[n_,d_,t_,s_]]:=Module[a,
+CQPartialQuotient[CQ[n_,d_,t_,s_]]:=Module[{a},
 	a=SqrtPolyPart[d];
-	If[deg[t,$X]<deg[s,$X],
+	Simplify[If[Exponent[t,$X]<Exponent[s,$X],
 		PolynomialQuotient[2 a,s,$X],
-		PolynomialQuotient[2 a+t,s,$X]]]
+		PolynomialQuotient[2 a+t,s,$X]]]]
 
-CQStep[CQ[n_,d_,tn_,sn_]]:=Module[{a,an,rn1},
+CQStep[CQ[n_,d_,tn_,sn_]]:=Module[{a,da2,an,tn1},
 	a=SqrtPolyPart[d];
+	da2=SquareRemainder[d];
 	an=CQPartialQuotient[CQ[n,d,tn,sn]];
-	rn1=an sn- a-tn;
-	CQ[n+1,d,rn1-a,Cancel[(d-rn1^2)/sn]]]
+	tn1=Simplify[an sn-2 a-tn];
+	CQ[n+1,d,
+		tn1,
+		Simplify[PolynomialQuotient[da2-2 a tn1-tn1^2,sn,$X]]]]
 
 (* ::Text:: *)
 (*Now we obviously have to think about how we can integrate the computations over quotients.*)
@@ -60,10 +64,10 @@ CQn[CQ[n_,d_,t_,s_]]:=n
 (* ::Text:: *)
 (*We also like to have a function that facilitates iteration on the CF expansion for a given limit.*)
 
-CQList[cq_,n_Integer/;n>=0]:=Nest[CQStep,cq,n]
+CQList[cq_,n_Integer/;n>=0]:=NestList[CQStep,cq,n]
 CQMap[fn_,cq_,n_Integer/;n>=0]:=Map[fn,CQList[cq,n]]
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Analysing the CF expansion*)
 
 (* ::Subsection:: *)
