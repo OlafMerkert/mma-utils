@@ -51,7 +51,7 @@ QModGroebner[ideal_]:=Module[{basis},
 		Prepend[basis,QModPrime[ideal]],
 		basis]]
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Fractions fields of such algebras*)
 
 (* ::Text:: *)
@@ -113,6 +113,16 @@ Protect[Plus,Times];
 QModCanonical[QMod[el_,ideal_]]:=QMod[QModCanonicalAny[el,ideal],ideal]
 
 (* ::Text:: *)
+(*Also add a shorter version for duality with QMod*)
+
+QModC[el_,ideal_]:=QModCanonical[QMod[el,ideal]]
+
+(* ::Text:: *)
+(*Also, it would seem useful to simplify to a Groebner Base.*)
+
+QModGroebnerCanonical[QMod[el_,ideal_]]:=QModCanonical[QMod[el,QModGroebner[ideal]]]
+
+(* ::Text:: *)
 (*Finally, for powers, we want to use square multiply mod things, so we use a very special algorithm*)
 
 Unprotect[Power];
@@ -130,13 +140,25 @@ Protect[Power];
 (* ::Section:: *)
 (*Univariate Polynomials over such fraction fields*)
 
-(* ::Section:: *)
-(*Some tests*)
+(* ::Text:: *)
+(*First we need to analyse which operations for polynomials we actually need. The main customer for now is the Laurent series CF process for square roots, where we use:*)
+(*	Exponent*)
+(*	SqrtPolyPart, relying on Series*)
+(*	PolynomialGCD*)
+(*	Cancel (we can use our normalisation functions there)*)
+(*	PolynomialQuotient*)
+(*	*)
+(*Another consideration would be, that the CF code should work transparently with normal polynomials, so we only have to use QMod when really necessary.*)
 
-QMod[t^2+t+1,{t^2+7}]+QMod[t^4+1,{t^2+7}]
+Unprotect[Exponent];
+Exponent[QMod[el_,ideal_],form_]:=Exponent[el,form]
+Protect[Exponent];
 
-QMod[t^2+t+1,{t^2+7}] QMod[t^4+1,{t^2+7}]
+QModCoefficientList[QMod[el_,ideal_],var_]:=QModC[#,ideal]&/@CoefficientList[el,var]
 
-QModCanonical[QMod[t^2+t+1,{t^2+7}]]
+QModCoefficientList[poly1,X]
 
-QMod[t^2+t+1,{3,t^2+7}]^20
+QModCoefficientList[poly1,X].(X^Table[i,{i,0,4}])
+
+(* ::Text:: *)
+(*Unfortunately, we made QMod absorbing, so the smartest thing to do would be to do operations on elements, and normalise later (perhaps coefficientwise for less complexity).*)
