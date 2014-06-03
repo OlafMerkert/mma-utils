@@ -5,9 +5,7 @@
 
 
 GrowthRates=Function[{n,bound},
-Module[{colours,functions},
-colours=Table[Hue[i/n],{i,0,n-1}];
-functions=Table[x^i,{i,1,n}];
-LogLogPlot[
-functions,{x,1,bound},
-PlotStyle->colours]]];
+	Module[{colours,functions},
+		colours=Table[Hue[i/n],{i,0,n-1}];
+		functions=Table[x^i,{i,1,n}];
+		LogLogPlot[functions,{x,1,bound},PlotStyle->colours]]];
