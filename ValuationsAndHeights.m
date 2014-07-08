@@ -1,5 +1,12 @@
 (* ::Package:: *)
 
+BeginPackage["ValuationsAndHeights`"]
+
+A::usage="An abstract archimedean valuation."
+U::usage="An abstract ultrametric valuation."
+
+Begin["`Private`"]
+
 (* ::Section:: *)
 (*Valuations*)
 
@@ -13,6 +20,7 @@ A[n_Rational]:=Abs[n]
 A[n_Integer]:=Abs[n]
 A[0]:=0
 
+
 (* ::Subsection:: *)
 (*Non-archimedean*)
 
@@ -24,3 +32,9 @@ U[1]:=1
 U[-1]:=1
 U[a_Rational/;a<0]:=U[-a]
 (*U[a_Rational]:=U[Numerator[a]]/U[Denominator[a]]*)
+
+(* ::Section:: *)
+(*End*)
+
+End[]
+EndPackage[]
