@@ -5,10 +5,15 @@ BeginPackage["ValuationsAndHeights`"]
 A::usage="An abstract archimedean valuation."
 U::usage="An abstract ultrametric valuation."
 
+ProjectiveHeightRationals::usage="Height for rational points in projective spaces."
+PolynomialHeightRationals::usage="Projective Height for polynomials."
+HeightPlot::usage="Visualise growth of height in sequences in a loglog plot."
+
 Begin["`Private`"]
 
 (* ::Section:: *)
 (*Valuations*)
+
 
 (* ::Subsection:: *)
 (*Archimedean*)
@@ -19,7 +24,6 @@ A[a_^n_Integer]:=A[a]^n
 A[n_Rational]:=Abs[n]
 A[n_Integer]:=Abs[n]
 A[0]:=0
-
 
 (* ::Subsection:: *)
 (*Non-archimedean*)
@@ -34,7 +38,37 @@ U[a_Rational/;a<0]:=U[-a]
 (*U[a_Rational]:=U[Numerator[a]]/U[Denominator[a]]*)
 
 (* ::Section:: *)
+(*Heights*)
+
+
+(* ::Subsection:: *)
+(*Projective heights*)
+
+
+ProjectiveHeightRationals=Function[{list},
+	Module[{maindenlist,dens},
+		dens=Map[Composition[Abs,Denominator],list];
+		maindenlist=Apply[LCM,dens]list;
+		Log[Apply[Max,Map[Abs,maindenlist]]]]];
+
+
+PolynomialHeightRationals=Function[{poly,var},
+	ProjectiveHeightRationals[CoefficientList[poly,var]]];
+
+
+(* ::Subsection:: *)
+(*Visualisation*)
+
+
+(* ::Input:: *)
+(*HeightPlot=Function[{list},*)
+(*Module[{values,points},*)
+(*values=Map[h,list];*)
+(*points=Table[{i,Part[values,i]},{i,Length[values]}];*)
+(*ListLogLogPlot[points]]];*)
+(* ::Section:: *)
 (*End*)
 
 End[]
 EndPackage[]
+
