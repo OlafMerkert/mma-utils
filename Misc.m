@@ -2,13 +2,10 @@
 
 BeginPackage["misc`"]
 
-
 CurrentMax::usage="CurrentMax[list] produces a list of the maximum of all
  subsequences starting at the beginning."
 
-
-Context["`Private`"]
-
+Begin["`Private`"]
 
 CurrentMax=Function[{seq},
 If[Length[seq]==0,
@@ -20,8 +17,6 @@ If[x>m,
 m=x];
 m]/@seq]]]
 
-
 End[]
-
 
 EndPackage[]
