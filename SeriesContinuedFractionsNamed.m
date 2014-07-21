@@ -10,6 +10,14 @@ Begin["`Private`"]
 (* ::Section:: *)
 (*Helper functions*)
 
+(* ::Subsection:: *)
+(*Basic*)
+
+Second[list_]:=Part[list,2]
+
+(* ::Subsection:: *)
+(*Simplification Wrapper*)
+
 (* ::Text:: *)
 (*In order to easily try out different simplification mechanisms, we define a wrapper.*)
 
@@ -63,10 +71,30 @@ Poles=Function[expr,
 	Cases[FactorList[expr,Modulus->$Char],
 		{b_,g_}/;And[g<0,Not[NumberQ[b]]]->b]];
 
+(* ::Subsection:: *)
+(*List and Table generation*)
+
+(* ::Text:: *)
+(*We also have a general function to produce tables, if we have accessors like above:*)
+
+list[accessor_,name_,nmax_]:=
+	Table[accessor[name,n],
+	{n,0,nmax}]
+flatlist[accessor_,name_,nmax_]:=Flatten[list[accessor,name,nmax]]
+union[accessor_,name_,nmax_]:=Union[list[accessor,name,nmax]]
+column[accessor_,name_,nmax_]:=Column[list[accessor,name,nmax],Frame->All]
+grid[accessor_,name_,nmax_]:=Grid[list[accessor,name,nmax],Frame->All]
+
+(* ::Text:: *)
+(*The above we call presenters. Often we want to combine a presentor with an accessor (a function which takes two arguments, name and n), so the following definition helps us with that.*)
+
+DefCompoundAccessor[abbrev_,presenter_,accessor_]:=
+	(abbrev[name_,nmax_]:=presenter[accessor,name,nmax])
+
 (* ::Section:: *)
 (*Continued fractions expansion*)
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Representing complete quotients and CF*)
 
 (* ::Text:: *)
@@ -142,34 +170,17 @@ ptd[name_,n_]:={partialquotient[name,n],
 (*As the above, but r=a0+t*)
 
 prd[name_,n_]:={partialquotient[name,n],
-polyrootpoly[name]+translator[name,n],
-denominator[name,n]}
+	polyrootpoly[name]+translator[name,n],
+	denominator[name,n]}
 
 (* ::Text:: *)
-(*We also have a general function to produce tables, if we have accessors like above:*)
-
-list[accessor_,name_,nmax_]:=
-	Table[accessor[name,n],
-	{n,0,nmax}]
-flatlist[accessor_,name_,nmax_]:=Flatten[list[accessor,name,nmax]]
-union[accessor_,name_,nmax_]:=Union[list[accessor,name,nmax]]
-column[accessor_,name_,nmax_]:=Column[list[accessor,name,nmax],Frame->All]
-grid[accessor_,name_,nmax_]:=Grid[list[accessor,name,nmax],Frame->All]
-
-(* ::Text:: *)
-(*The above we call presenters. Often we want to combine a presentor with an accessor (a function which takes two arguments, name and n), so the following definition helps us with that.*)
-
-DefCompoundAccessor[abbrev_,presenter_,accessor_]:=
-	(abbrev[name_,nmax_]:=presenter[accessor,name,nmax])
-
-(* ::Text:: *)
-(*And for legacy reasons, we provide also these:*)
+(*For better inspection, we define Table versions of these:*)
 
 DefCompoundAccessor[ptdTable,column,ptd]
 DefCompoundAccessor[prdTable,column,prd]
 DefCompoundAccessor[pqList,list,partialquotient]
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Searching for poles in the partial quotients*)
 
 (* ::Text:: *)
@@ -181,7 +192,7 @@ DefCompoundAccessor[poleTable,grid,poles]
 DefCompoundAccessor[poleList,union,poles]
 DefCompoundAccessor[degList,list,Composition[degree,partialquotient]]
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Automatic specialisation*)
 
 (* ::Text:: *)
@@ -204,7 +215,7 @@ specialDegList[name_,nmax_]:=Map[
 
 DefCompoundAccessor[denList,list,Composition[Factor,denominator]]
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Computing the period length*)
 
 (* ::Text:: *)
@@ -217,6 +228,30 @@ FindQuasiPeriod[name_]:=For[i=1,i<findperiodlimit,i++,
 	If[0==degree[denominator[name,i]],Return[i]]]
 
 denListAuto[name_]:=denList[name,FindPeriod[name]]
+
+(* ::Section:: *)
+(*Convergents & Pell equation*)
+
+(* ::Subsection:: *)
+(*Convergents come from Matrix products*)
+
+approxMatrixFactor[a_]:=({
+ {a, 1},
+ {1, 0}
+})
+
+approxMatrix[name_,0]:=approxMatrixFactor[partialquotient[name,0]/2]
+approxMatrix[name_,n_Integer/;n>0]:=approxMatrix[name,n]=
+	Dot[approxMatrix[name,n-1],approxMatrixFactor[partialquotient[name,n]]]
+approxFraction[name_,n_]:=Simplify[Map[First,approxMatrix[name,n]]]
+
+DefCompoundAccessor[approxNumList,list,Composition[First,approxFraction]]
+DefCompoundAccessor[approxDenList,list,Composition[Second,approxFraction]]
+
+(* ::Subsection:: *)
+(*Testing solutions of the Pell equation*)
+
+pellTest[name_,{p_,q_}]:=Collect[p^2-poly[name] q^2,X]
 
 (* ::Section:: *)
 (*End*)
