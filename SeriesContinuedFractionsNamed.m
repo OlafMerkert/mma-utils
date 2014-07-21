@@ -3,19 +3,55 @@
 BeginPackage["SeriesContinuedFractionsNamed`"]
 
 CF::square="Cannot produce CF expansion for square polynomial";
+OmegaAlg::usage="Make elements of number fields more readable.";
+degree::usage="Degree in X";
+X::usage="Default polynomial variable";
+LeadingCoefficient::usage="leading coefficient with respect to X";
+FirstZero::usage="Produce a representation for a root of an irreducible polynomial.";
+Poles::usage="Find all the irreducible factors in the denominator of a rational function.";
+DefCompoundAccessor::usage="Create listing or table functions for CF expansions.";
+
+SqrtContinuedFraction::usage="Produce a named CF expansion for the square root of a given polynomial in X.";
+poly::usage="The radicand relevant to the CF expansion";
+polyroot::usage="A square root, the power series which starts the CF expansion.";
+polyrootpoly::usage="The truncation of the starting power series.";
+partialquotient::usage="Accessor for the partial quotients of the CF expansion.";
+denominator::usage="gives all information to obtain the partial quotients.";
+translator::usage="gives the information missing for the complete quotients.";
+SpecialiseCF::usage="plug in a special value for a free parameter (for now just t) in the CF expansion";
+ ClearCF::usage="Forget all data belonging to a name";
+cfDesc::usage="Show name, radicand and truncated series";
+ptdTable::usage="Show a representation of the complete quotients";
+prdTable::usage="Show another representation of the complete quotients";
+pqList::usage="A list of partial quotients";
+
+poleTable::usage="Tabular listing of poles";
+poleList::usage="A list of the first poles in the CF expansion";
+degList::usage="List of degrees of partial quotients";
+SpecList::usage="Names of the specialised CF expansions";
+specialDegList::usage="Degrees of partial quotients of the specialised CF expansions";
+FindPeriod::usage="Compute the period length by analysing the denominators";
+FindQuasiPeriod::usage="Compute the period length by looking for a constant denominator";
+
+approxMatrix::usage="Convergents of two steps";
+approxFraction::usage="Convergent of one step";
+approxNumList::usage="A list of the first parts of the convergents";
+approxDenList::usage="A list of the second parts of the convergents";
+
+pellTest::usage="Verify if given polynomials satisfy the Pell equation";
 
 Begin["`Private`"]
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Helper functions*)
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Basic*)
 
 Second[list_]:=Part[list,2]
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Simplification Wrapper*)
 
 (* ::Text:: *)
@@ -26,7 +62,7 @@ Smpl[x_]:=Simplify[x]
 (* ::Text:: *)
 (*TODO We also need a mechanism to remove calculated information.*)
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Characteristic*)
 
 (* ::Text:: *)
@@ -37,13 +73,13 @@ CMod[poly_]:=poly
 CMod[n_Integer]:=n
 WithChar[p_,body__]:=Block[{$Char=p},body]
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Algebraic numbers*)
 
 OmegaPoly[coeff_]:=(\[Omega]^Range[0,Length[coeff]-1]).coeff
 OmegaAlg={AlgebraicNumber[_,coeff_]:>OmegaPoly[coeff],Root[__]->\[Omega]};
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Polynomials*)
 
 (* ::Text:: *)
@@ -61,7 +97,7 @@ FirstZero=Function[polynomial,
 		If[SameQ[Head[z],Root],
 			ToNumberField[z],z]]];
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Rational functions*)
 
 (* ::Text:: *)
@@ -91,7 +127,7 @@ grid[accessor_,name_,nmax_]:=Grid[list[accessor,name,nmax],Frame->All]
 DefCompoundAccessor[abbrev_,presenter_,accessor_]:=
 	(abbrev[name_,nmax_]:=presenter[accessor,name,nmax])
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Continued fractions expansion*)
 
 (* ::Subsection::Closed:: *)
@@ -137,8 +173,8 @@ SqrtContinuedFraction=Function[{name,radicand},
 (*If the radicand contains a variable (different from X, which is our main polynomial variable), we can assign a special value to it. The following function does this (given a CF name), and goes on to compute the CF with the special value at once.*)
 
 SpecialiseCF=Function[{name,param,value},
-SqrtContinuedFraction[name[value],
-poly[name]/.param->value]];
+	SqrtContinuedFraction[name[value],
+		poly[name]/.param->value]];
 
 (* ::Subsection::Closed:: *)
 (*TODO Clearing a name*)
@@ -151,7 +187,7 @@ partialquotient[name,_]=.;
 denominator[name,_]=.;
 translator[name,_]=.;]
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Abbreviations and list/table generators*)
 
 (* ::Text:: *)
@@ -192,7 +228,7 @@ DefCompoundAccessor[poleTable,grid,poles]
 DefCompoundAccessor[poleList,union,poles]
 DefCompoundAccessor[degList,list,Composition[degree,partialquotient]]
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Automatic specialisation*)
 
 (* ::Text:: *)
@@ -215,7 +251,7 @@ specialDegList[name_,nmax_]:=Map[
 
 DefCompoundAccessor[denList,list,Composition[Factor,denominator]]
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Computing the period length*)
 
 (* ::Text:: *)
